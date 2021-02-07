@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tenera.weatherservice.dto.ErrorDetailsDto;
 import com.tenera.weatherservice.dto.HistoryReportDto;
 import com.tenera.weatherservice.dto.WeatherReportDto;
-import com.tenera.weatherservice.exception.OpenWeatherApiException;
 import com.tenera.weatherservice.service.WeatherAppService;
 
 import io.swagger.annotations.Api;
