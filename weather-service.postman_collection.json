@@ -1,0 +1,61 @@
+{
+	"info": {
+		"_postman_id": "58f9d91c-959e-4ef9-b933-3c3d577f6d56",
+		"name": "weather-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Current",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/current/?city=frankfurt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"current",
+						""
+					],
+					"query": [
+						{
+							"key": "city",
+							"value": "frankfurt"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "History",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8090/history/?city=frankfurt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"history",
+						""
+					],
+					"query": [
+						{
+							"key": "city",
+							"value": "frankfurt"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
