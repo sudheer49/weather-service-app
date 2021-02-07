@@ -1,4 +1,4 @@
-package com.tenera.weatherService;
+package com.tenera.weatherservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
