@@ -1,8 +1,9 @@
 package com.tenera.weatherservice.util;
 
 /**
+ * Utility class for Weather service application 
  * 
- * @author Satya_Kolipaka
+ * @author Satya Kolipaka
  *
  */
 public class Constants {

@@ -5,5 +5,5 @@ spring:
     name: weather-service-app
 config:
   openweather:
-    apiUrl: http://api.openweathermap.org/data/2.5/weather
+    apiUrl: http://api.openweathermap.org/data/2.5/
     apiKey: 53c6da03524787e4a47cfb8e582094e7

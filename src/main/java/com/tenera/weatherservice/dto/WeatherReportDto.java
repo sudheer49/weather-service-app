@@ -4,6 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Class holds weather report information
+ * 
+ * @author Satya_Kolipaka
+ *
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

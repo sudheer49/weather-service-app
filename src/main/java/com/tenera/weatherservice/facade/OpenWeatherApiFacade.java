@@ -2,9 +2,9 @@ package com.tenera.weatherservice.facade;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.gson.Gson;
 import com.tenera.weatherservice.dto.WeatherReportDto;
+import com.tenera.weatherservice.exception.OpenWeatherApiException;
 import com.tenera.weatherservice.util.Constants;
 
 /**
@@ -27,7 +28,6 @@ import com.tenera.weatherservice.util.Constants;
 @Service
 public class OpenWeatherApiFacade {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(OpenWeatherApiFacade.class);
 
 	@Value("${config.openweather.apiUrl}")
 	private String weatherApiUrl;
@@ -35,7 +35,8 @@ public class OpenWeatherApiFacade {
 	@Value("${config.openweather.apiKey}")
 	private String apiKey;
 
-	private RestTemplate restTemplate = new RestTemplate();
+	@Autowired
+	private RestTemplate restTemplate;
 
 	/**
 	 * Method to retrieve the weather report from open weather API
@@ -45,38 +46,83 @@ public class OpenWeatherApiFacade {
 	 */
 	@SuppressWarnings("unchecked")
 	public WeatherReportDto retrieveWeatherReport(String location) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(weatherApiUrl).queryParam("q", location)
+
+		final String url = weatherApiUrl + "weather";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("q", location)
 				.queryParam("APPID", apiKey).queryParam("units", Constants.UNITS);
 		ResponseEntity<String> response = null;
-		WeatherReportDto weatherReportDto = new WeatherReportDto();
+
 		try {
 			response = restTemplate.exchange(builder.build(true).toUri(), HttpMethod.GET, null, String.class);
 			Map<String, Object> responseMap = new Gson().fromJson(response.getBody(), Map.class);
 
-			List<Object> weather = (List<Object>) responseMap.get(Constants.WEATHER);
-			Map<String, String> weatherMap = (Map<String, String>) weather.get(0);
-			weatherReportDto.setUmbrella(determineUmbrellaRequried(weatherMap.get(Constants.MAIN)));
+			return convertJsonObjectToWeatherReportDto(responseMap);
 
-			Map<String, Object> mainMap = (Map<String, Object>) responseMap.get(Constants.MAIN);
-			weatherReportDto.setTemp((double) mainMap.get(Constants.TEMP));
-			weatherReportDto.setPressure((double) mainMap.get(Constants.PRESSURE));
-
-			return weatherReportDto;
 		} catch (HttpClientErrorException ex) {
-			LOGGER.error("Error with openweather API: {}", ex.getMessage());
+			throw new OpenWeatherApiException(ex.getMessage(), ex.getRawStatusCode());
 		} catch (Exception ex) {
-			LOGGER.error("There is some error : {}", ex.getMessage());
+			throw new OpenWeatherApiException(ex.getMessage(), 500);
 		}
-		return null;
-
 	}
 
 	/**
+	 * Method to retrieve last five weather reports from open weather API
+	 * 
+	 * @param city
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<WeatherReportDto> retrieveHistoryWeatherReport(String city) {
+
+		final String url = weatherApiUrl + "forecast";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url).queryParam("q", city)
+				.queryParam("APPID", apiKey).queryParam("cnt", 5).queryParam("units", Constants.UNITS);
+		ResponseEntity<String> response = null;
+		try {
+			response = restTemplate.exchange(builder.build(true).toUri(), HttpMethod.GET, null, String.class);
+			Map<String, Object> responseMap = new Gson().fromJson(response.getBody(), Map.class);
+
+			List<Map<String, Object>> lastFiveDaysList = (List<Map<String, Object>>) responseMap.get("list");
+
+			return lastFiveDaysList.stream().map(obj -> convertJsonObjectToWeatherReportDto(obj))
+					.collect(Collectors.toList());
+
+		} catch (HttpClientErrorException ex) {
+			throw new OpenWeatherApiException(ex.getMessage(), ex.getRawStatusCode());
+		} catch (Exception ex) {
+			throw new OpenWeatherApiException(ex.getMessage(), 500);
+		}
+	}
+
+	/**
+	 * Method to convert json object to WeatherReportDto class
+	 * @param jsonMap
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private WeatherReportDto convertJsonObjectToWeatherReportDto(Map<String, Object> jsonMap) {
+
+		WeatherReportDto weatherReportDto = new WeatherReportDto();
+
+		List<Object> weather = (List<Object>) jsonMap.get(Constants.WEATHER);
+		Map<String, String> weatherMap = (Map<String, String>) weather.get(0);
+		weatherReportDto.setUmbrella(determineUmbrellaRequired(weatherMap.get(Constants.MAIN)));
+
+		Map<String, Object> mainMap = (Map<String, Object>) jsonMap.get(Constants.MAIN);
+		weatherReportDto.setTemp((double) mainMap.get(Constants.TEMP));
+		weatherReportDto.setPressure((double) mainMap.get(Constants.PRESSURE));
+
+		return weatherReportDto;
+	}
+
+	/**
+	 * Method to determine Umbrella is Required or not
 	 * 
 	 * @param weather
 	 * @return
 	 */
-	private boolean determineUmbrellaRequried(String weather) {
+	private boolean determineUmbrellaRequired(String weather) {
 		return weather.matches("Thunderstorm|Drizzle|Rain");
 	}
+
 }

@@ -1,10 +1,10 @@
-package com.tenera.weatherService;
+package com.tenera.weatherservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class WeatherServiceAppApplicationTests {
+class WeatherServiceApplicationTests {
 
 	@Test
 	void contextLoads() {
